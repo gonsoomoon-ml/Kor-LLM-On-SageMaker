@@ -1,10 +1,12 @@
+import boto3
+import time
 
-def descirbe_endpoint(endpoint_name):
-    import boto3
-    import time
     
+def descirbe_endpoint(endpoint_name):
+    '''
+    엔드폰인트 생성 유무를 확인. 생성 중이면 기다림.
+    '''
     sm_client = boto3.client("sagemaker")
-
 
     while(True):
         response = sm_client.describe_endpoint(
@@ -20,7 +22,9 @@ def descirbe_endpoint(endpoint_name):
 
 
 def invoke_inference(endpoint_name, prompt):
-    import boto3
+    '''
+    프롬프트를 제공하여 엔드포인트 호출
+    '''
     client = boto3.client("sagemaker-runtime")
     
     content_type = "text/plain"
