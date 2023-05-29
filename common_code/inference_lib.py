@@ -36,7 +36,7 @@ def invoke_inference(endpoint_name, prompt):
     res = response["Body"].read().decode()
     print (eval(res)[0]['generated_text'])
 
-            
+             
         
 def query_endpoint_with_text_payload(plain_text, endpoint_name, content_type="text/plain"):
     '''
@@ -105,12 +105,40 @@ class EmbeddingContentHandler(EmbeddingsContentHandler):
 
     def transform_output(self, output: bytes) -> str:
         response_json = json.loads(output.read().decode("utf-8"))
-        print("response_json shape: ", np.array(response_json).shape)
-        print("response_json shape: ", np.array(response_json[0][0][0]).shape)        
-        # print("response_json in EmbeddingContentHandler \n",  response_json)
-        # embeddings = response_json["embedding"][0]
-        embeddings = response_json[0][0]     
-        return embeddings
+        ndim = np.array(response_json).ndim    
+        print("response_json shape: \n", np.array(response_json).ndim)        
+        print("response_json shape: \n", np.array(response_json).shape)    
+        if ndim == 3:
+            # Original shape (1, n, 768)
+            emb = response_json[0][0]
+            emb = np.expand_dims(emb, axis=0).tolist()
+            print("emb shape: ", np.array(emb).shape)
+            print("emb TYPE: ", type(emb))        
+        elif ndim == 2:
+            # Original shape (n, 1)
+            # print(response_json[0])
+            emb = []
+            for ele in response_json:
+                print(np.array(response_json[0]).shape)
+                e = ele[0][0]
+                #emb = np.expand_dims(emb, axis=0).tolist()
+                # print("emb shape: ", np.array(emb).shape)
+                # print("emb TYPE: ", type(emb))        
+                emb.append(e)
+            print("emb_list shape: ", np.array(emb).shape)
+            print("emb_list TYPE: ", type(emb))        
+        else:
+            emb = None
+        return emb
+    
+    # def transform_output(self, output: bytes) -> str:
+    #     response_json = json.loads(output.read().decode("utf-8"))
+    #     print("response_json shape: ", np.array(response_json).shape)
+    #     print("response_json shape: ", np.array(response_json[0][0]).shape)        
+    #     # print("response_json in EmbeddingContentHandler \n",  response_json)
+    #     # embeddings = response_json["embedding"][0]
+    #     embeddings = response_json[0][0]     
+    #     return embeddings
 
 
 ################################################
