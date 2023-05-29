@@ -84,8 +84,8 @@ class SagemakerEndpointEmbeddingsJumpStart(SagemakerEndpointEmbeddings):
         results = []
         _chunk_size = len(texts) if chunk_size > len(texts) else chunk_size
 
-        print("text size: ", len(texts))
-        print("_chunk_size: ", _chunk_size)
+        # print("text size: ", len(texts))
+        # print("_chunk_size: ", _chunk_size)
 
         for i in range(0, len(texts), _chunk_size):
             response = self._embedding_func(texts[i : i + _chunk_size])
@@ -95,7 +95,7 @@ class SagemakerEndpointEmbeddingsJumpStart(SagemakerEndpointEmbeddings):
 
 import numpy as np
     
-class EmbeddingContentHandler(EmbeddingsContentHandler):
+class KoSimCSERobertaContentHandler(EmbeddingsContentHandler):
     content_type = "application/json"
     accepts = "application/json"
 
@@ -106,47 +106,40 @@ class EmbeddingContentHandler(EmbeddingsContentHandler):
     def transform_output(self, output: bytes) -> str:
         response_json = json.loads(output.read().decode("utf-8"))
         ndim = np.array(response_json).ndim    
-        print("response_json shape: \n", np.array(response_json).ndim)        
-        print("response_json shape: \n", np.array(response_json).shape)    
-        if ndim == 3:
-            # Original shape (1, n, 768)
-            emb = response_json[0][0]
+        # print("response_json ndim: \n", ndim)        
+        # print("response_json shape: \n", np.array(response_json).shape)    
+        if ndim == 4:
+            # Original shape (1, 1, n, 768)
+            emb = response_json[0][0][0]
             emb = np.expand_dims(emb, axis=0).tolist()
-            print("emb shape: ", np.array(emb).shape)
-            print("emb TYPE: ", type(emb))        
+            # print("emb shape: ", np.array(emb).shape)
+            # print("emb TYPE: ", type(emb))        
         elif ndim == 2:
             # Original shape (n, 1)
             # print(response_json[0])
             emb = []
             for ele in response_json:
-                print(np.array(response_json[0]).shape)
+                # print(np.array(response_json[0]).shape)
                 e = ele[0][0]
                 #emb = np.expand_dims(emb, axis=0).tolist()
                 # print("emb shape: ", np.array(emb).shape)
                 # print("emb TYPE: ", type(emb))        
                 emb.append(e)
-            print("emb_list shape: ", np.array(emb).shape)
-            print("emb_list TYPE: ", type(emb))        
+            # print("emb_list shape: ", np.array(emb).shape)
+            # print("emb_list TYPE: ", type(emb))        
         else:
+            print(f"Other # of dimension: {ndim}")
             emb = None
         return emb
     
-    # def transform_output(self, output: bytes) -> str:
-    #     response_json = json.loads(output.read().decode("utf-8"))
-    #     print("response_json shape: ", np.array(response_json).shape)
-    #     print("response_json shape: ", np.array(response_json[0][0]).shape)        
-    #     # print("response_json in EmbeddingContentHandler \n",  response_json)
-    #     # embeddings = response_json["embedding"][0]
-    #     embeddings = response_json[0][0]     
-    #     return embeddings
-
 
 ################################################
 # LLM  Handler
 ################################################
 from langchain.llms.sagemaker_endpoint import LLMContentHandler
+import json
 
-class KorLLMContentHandler(LLMContentHandler):
+class KoAlpacaContentHandler(LLMContentHandler):
     content_type = "application/json"
     accepts = "application/json"
 
@@ -155,5 +148,12 @@ class KorLLMContentHandler(LLMContentHandler):
         return input_str.encode("utf-8")
 
     def transform_output(self, output: bytes) -> str:
+        print("In KoAlpacaContentHandler")
+        # print("output: ", output)
         response_json = json.loads(output.read().decode("utf-8"))
-        return response_json["generated_texts"][0]
+        print("response_json: ", response_json)        
+#        return response_json["generated_texts"][0]
+        doc = response_json[0]['generated_text']
+        doc = json.loads(doc)
+        doc = doc['text_inputs']
+        return doc
