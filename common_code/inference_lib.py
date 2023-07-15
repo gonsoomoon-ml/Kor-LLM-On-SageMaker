@@ -10,7 +10,8 @@ A dedicated helper to manage templates and prompt building.
 import json
 import os.path as osp
 from typing import Union
-
+import os
+import pathlib
 
 class Prompter(object):
     __slots__ = ("template", "_verbose")
@@ -21,7 +22,21 @@ class Prompter(object):
             # Enforce the default here, so the constructor can be called with '' and will not break.
             template_name = "alpaca"
         #file_name = osp.join("templates", f"{template_name}.json")
-        file_name = osp.join("../common_code", f"{template_name}.json")
+        # file_name = str(pathlib.Path().home()) + '/Kor-LLM-On-SageMaker/common_code' #  + f"{template_name}.json"
+        file_name = osp.join("/root/Kor-LLM-On-SageMaker/common_code", f"{template_name}.json")
+
+        
+
+        # path = pathlib.Path.cwd()
+        # print("Pathlib: ", path)
+
+        # print(pathlib.Path().home())
+
+        # path = pathlib.Path().home() + '/Kor-LLM-On-SageMaker/common_code'
+
+
+        # print("pwd: ", os.getcwd())
+        # file_name = f"{template_name}.json"
         if not osp.exists(file_name):
             raise ValueError(f"Can't read {file_name}")
         with open(file_name) as fp:
@@ -111,7 +126,7 @@ def invoke_inference_DJ(endpoint_name, prompt):
     )
 
     res = response["Body"].read().decode()
-    print (res)
+    # print (res)
     
     return res
 
@@ -159,97 +174,97 @@ def parse_response(query_response):
 # Embedding Handler
 ################################################
 
-from langchain.embeddings.sagemaker_endpoint import EmbeddingsContentHandler
-from langchain.embeddings import SagemakerEndpointEmbeddings
-from langchain.llms.sagemaker_endpoint import ContentHandlerBase
-from typing import Any, Dict, List, Optional
+# from langchain.embeddings.sagemaker_endpoint import EmbeddingsContentHandler
+# from langchain.embeddings import SagemakerEndpointEmbeddings
+# from langchain.llms.sagemaker_endpoint import ContentHandlerBase
+# from typing import Any, Dict, List, Optional
 
-class SagemakerEndpointEmbeddingsJumpStart(SagemakerEndpointEmbeddings):
-    def embed_documents(self, texts: List[str], chunk_size: int = 5) -> List[List[float]]:
-        """Compute doc embeddings using a SageMaker Inference Endpoint.
+# class SagemakerEndpointEmbeddingsJumpStart(SagemakerEndpointEmbeddings):
+#     def embed_documents(self, texts: List[str], chunk_size: int = 5) -> List[List[float]]:
+#         """Compute doc embeddings using a SageMaker Inference Endpoint.
 
-        Args:
-            texts: The list of texts to embed.
-            chunk_size: The chunk size defines how many input texts will
-                be grouped together as request. If None, will use the
-                chunk size specified by the class.
+#         Args:
+#             texts: The list of texts to embed.
+#             chunk_size: The chunk size defines how many input texts will
+#                 be grouped together as request. If None, will use the
+#                 chunk size specified by the class.
 
-        Returns:
-            List of embeddings, one for each text.
-        """
-        results = []
-        _chunk_size = len(texts) if chunk_size > len(texts) else chunk_size
+#         Returns:
+#             List of embeddings, one for each text.
+#         """
+#         results = []
+#         _chunk_size = len(texts) if chunk_size > len(texts) else chunk_size
 
-        # print("text size: ", len(texts))
-        # print("_chunk_size: ", _chunk_size)
+#         # print("text size: ", len(texts))
+#         # print("_chunk_size: ", _chunk_size)
 
-        for i in range(0, len(texts), _chunk_size):
-            response = self._embedding_func(texts[i : i + _chunk_size])
-            print
-            results.extend(response)
-        return results
+#         for i in range(0, len(texts), _chunk_size):
+#             response = self._embedding_func(texts[i : i + _chunk_size])
+#             print
+#             results.extend(response)
+#         return results
 
-import numpy as np
+# import numpy as np
     
-class KoSimCSERobertaContentHandler(EmbeddingsContentHandler):
-    content_type = "application/json"
-    accepts = "application/json"
+# class KoSimCSERobertaContentHandler(EmbeddingsContentHandler):
+#     content_type = "application/json"
+#     accepts = "application/json"
 
-    def transform_input(self, prompt: str, model_kwargs={}) -> bytes:
-        input_str = json.dumps({"inputs": prompt, **model_kwargs})
-        return input_str.encode("utf-8")
+#     def transform_input(self, prompt: str, model_kwargs={}) -> bytes:
+#         input_str = json.dumps({"inputs": prompt, **model_kwargs})
+#         return input_str.encode("utf-8")
 
-    def transform_output(self, output: bytes) -> str:
-        response_json = json.loads(output.read().decode("utf-8"))
-        ndim = np.array(response_json).ndim    
-        # print("response_json ndim: \n", ndim)        
-        # print("response_json shape: \n", np.array(response_json).shape)    
-        if ndim == 4:
-            # Original shape (1, 1, n, 768)
-            emb = response_json[0][0][0]
-            emb = np.expand_dims(emb, axis=0).tolist()
-            # print("emb shape: ", np.array(emb).shape)
-            # print("emb TYPE: ", type(emb))        
-        elif ndim == 2:
-            # Original shape (n, 1)
-            # print(response_json[0])
-            emb = []
-            for ele in response_json:
-                # print(np.array(response_json[0]).shape)
-                e = ele[0][0]
-                #emb = np.expand_dims(emb, axis=0).tolist()
-                # print("emb shape: ", np.array(emb).shape)
-                # print("emb TYPE: ", type(emb))        
-                emb.append(e)
-            # print("emb_list shape: ", np.array(emb).shape)
-            # print("emb_list TYPE: ", type(emb))        
-        else:
-            print(f"Other # of dimension: {ndim}")
-            emb = None
-        return emb
+#     def transform_output(self, output: bytes) -> str:
+#         response_json = json.loads(output.read().decode("utf-8"))
+#         ndim = np.array(response_json).ndim    
+#         # print("response_json ndim: \n", ndim)        
+#         # print("response_json shape: \n", np.array(response_json).shape)    
+#         if ndim == 4:
+#             # Original shape (1, 1, n, 768)
+#             emb = response_json[0][0][0]
+#             emb = np.expand_dims(emb, axis=0).tolist()
+#             # print("emb shape: ", np.array(emb).shape)
+#             # print("emb TYPE: ", type(emb))        
+#         elif ndim == 2:
+#             # Original shape (n, 1)
+#             # print(response_json[0])
+#             emb = []
+#             for ele in response_json:
+#                 # print(np.array(response_json[0]).shape)
+#                 e = ele[0][0]
+#                 #emb = np.expand_dims(emb, axis=0).tolist()
+#                 # print("emb shape: ", np.array(emb).shape)
+#                 # print("emb TYPE: ", type(emb))        
+#                 emb.append(e)
+#             # print("emb_list shape: ", np.array(emb).shape)
+#             # print("emb_list TYPE: ", type(emb))        
+#         else:
+#             print(f"Other # of dimension: {ndim}")
+#             emb = None
+#         return emb
     
 
-################################################
-# LLM  Handler
-################################################
-from langchain.llms.sagemaker_endpoint import LLMContentHandler
-import json
+# ################################################
+# # LLM  Handler
+# ################################################
+# from langchain.llms.sagemaker_endpoint import LLMContentHandler
+# import json
 
-class KoAlpacaContentHandler(LLMContentHandler):
-    content_type = "application/json"
-    accepts = "application/json"
+# class KoAlpacaContentHandler(LLMContentHandler):
+#     content_type = "application/json"
+#     accepts = "application/json"
 
-    def transform_input(self, prompt: str, model_kwargs={}) -> bytes:
-        input_str = json.dumps({"text_inputs": prompt, **model_kwargs})
-        return input_str.encode("utf-8")
+#     def transform_input(self, prompt: str, model_kwargs={}) -> bytes:
+#         input_str = json.dumps({"text_inputs": prompt, **model_kwargs})
+#         return input_str.encode("utf-8")
 
-    def transform_output(self, output: bytes) -> str:
-        print("In KoAlpacaContentHandler")
-        # print("output: ", output)
-        response_json = json.loads(output.read().decode("utf-8"))
-        print("response_json: ", response_json)        
-#        return response_json["generated_texts"][0]
-        doc = response_json[0]['generated_text']
-        doc = json.loads(doc)
-        doc = doc['text_inputs']
-        return doc
+#     def transform_output(self, output: bytes) -> str:
+#         print("In KoAlpacaContentHandler")
+#         # print("output: ", output)
+#         response_json = json.loads(output.read().decode("utf-8"))
+#         print("response_json: ", response_json)        
+# #        return response_json["generated_texts"][0]
+#         doc = response_json[0]['generated_text']
+#         doc = json.loads(doc)
+#         doc = doc['text_inputs']
+#         return doc
