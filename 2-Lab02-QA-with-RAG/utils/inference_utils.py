@@ -3,6 +3,7 @@ import time
 import boto3
 import os.path as osp
 from typing import Union
+import pprint
 """
 A dedicated helper to manage templates and prompt building.
 """
@@ -85,3 +86,38 @@ def parse_response(query_response):
     if len(listRes) >= 2: return listRes
     else: return listRes[0].strip()
     
+    
+    
+class KoLLMSageMakerEndpoint(object):
+    def __init__(self, endpoint_name):
+        self.endpoint_name = endpoint_name
+        self.prompter  = Prompter("kullm")
+        self.smr_client  = boto3.client('sagemaker-runtime')
+        
+    def get_payload(self, instruction, input_text, params):
+        prompter = Prompter("kullm")
+        prompt = prompter.generate_prompt(instruction, input_text)
+        payload = {
+            'inputs': prompt,
+            'parameters': params
+        }
+        return payload
+
+    def infer(self, payload, verbose=True):
+        
+        content_type = "application/json"
+        response = self.smr_client.invoke_endpoint(
+            EndpointName=self.endpoint_name,
+            ContentType=content_type,
+            Body=json.dumps(payload)
+        )
+
+        #model_predictions = json.loads(response['Body'].read().decode())
+        #s = model_predictions[0]['generated_text']
+        #generated_text = self.prompter.get_response(s)
+        res = response["Body"].read().decode()
+        generated_text = parse_response(res)
+        generated_text = generated_text.split('###')[0]
+        if verbose:
+            pprint.pprint(f'Response: {generated_text}')
+        return generated_text

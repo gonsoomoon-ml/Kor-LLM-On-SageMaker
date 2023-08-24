@@ -71,7 +71,7 @@ class Prompter(object):
     def get_response(self, output: str) -> str:
         return output.split(self.template["response_split"])[1].strip()
     
-def descirbe_endpoint(endpoint_name):
+def describe_endpoint(endpoint_name):
     '''
     엔드폰인트 생성 유무를 확인. 생성 중이면 기다림.
     '''
