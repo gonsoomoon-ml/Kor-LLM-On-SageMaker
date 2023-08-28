@@ -19,6 +19,10 @@
 - 4.Kor-Embedding-Model.ipynb  
     - 허깅 페이스의 'BM-K/KoSimCSE-roberta' 한국어 임베딩 모델을 배포 및 추론 하는 예제 입니다.
 
+## 3-한국어 금융 데이터 RAG 실습
+[Amazon SageMaker와 Amazon Opensearch로 RAG (Retrieval-Augmented Generation) 구현실습 ](https://github.com/gonsoomoon-ml/Kor-LLM-On-SageMaker/tree/main/2-Lab02-QA-with-RAG/4.rag-fsi-data-workshop) - 
+RAG (Retrieval-Augmented Generation)는 정보 검색과 텍스트 생성을 결합한 혁신적인 NLP 아키텍처입니다. 이번 실습에서는 RAG가 어떻게 Amazon Opensearch와 통합되어 외부의 신뢰할 수 있는 데이터베이스나 문서를 검색하는 과정을 강화하는지 간단한 실습을 통해 알아봅니다.
+이 실습에서는 SageMaker Endpoint와 Amazon Openssearch에서 Embedding 데이터 입력, SDK, 그리고 [LangChain](https://python.langchain.com/docs/get_started/introduction) 및 [FAISS](https://faiss.ai/index.html)와 같은 오픈소스 소프트웨어를 통해 이러한 패턴을 구현하는 실무 경험을 쌓을 수 있습니다.
 
 
 ## Reference:
