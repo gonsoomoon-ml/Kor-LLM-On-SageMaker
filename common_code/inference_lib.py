@@ -170,6 +170,25 @@ def parse_response(query_response):
     if len(listRes) >= 2: return listRes
     else: return listRes[0].strip()
     
+
+from io import StringIO
+import sys
+import textwrap
+
+
+def print_ww(*args, width: int = 100, **kwargs):
+    """Like print(), but wraps output to `width` characters (default 100)"""
+    buffer = StringIO()
+    try:
+        _stdout = sys.stdout
+        sys.stdout = buffer
+        print(*args, **kwargs)
+        output = buffer.getvalue()
+    finally:
+        sys.stdout = _stdout
+    for line in output.splitlines():
+        print("\n".join(textwrap.wrap(line, width=width)))
+    
 ################################################
 # Embedding Handler
 ################################################
