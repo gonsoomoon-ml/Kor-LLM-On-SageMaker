@@ -107,6 +107,6 @@ echo "# conda env remove -n" $VirtualEnv
 echo "# Show jupyter kernels"
 echo "# jupyter kernelspec list"
 echo "# Remvoe the given jupyter kernels"
-echo "jupyter kernelspec uninstall -y " $VirtualEnv
+echo "# jupyter kernelspec uninstall -y " $VirtualEnv
 echo ""
 
