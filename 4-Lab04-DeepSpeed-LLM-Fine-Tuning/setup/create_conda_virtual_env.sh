@@ -65,8 +65,15 @@ echo "#########################################"
 echo "# Upgrading gcc"
 echo "#########################################"
 
+echo "# Current gcc version"
+gcc --version
+echo ""
+sudo yum update
+sudo yum install centos-release-scl
 sudo yum install devtoolset-10-gcc devtoolset-10-gcc-c++
 scl enable devtoolset-10 bash
+
+echo "# After gcc version"
 gcc --version
 source /opt/rh/devtoolset-10/enable
 
