@@ -6,4 +6,4 @@ bitsandbytes==0.43.1
 huggingface_hub==0.22.2
 trl==0.8.6
 peft==0.10.0
-torch==2.2.2
+torch==2.1.1

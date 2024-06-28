@@ -59,7 +59,6 @@ class ScriptArguments:
         default=512, metadata={"help": "The maximum sequence length for SFT Trainer"}
     )
 
-
 def merge_and_save_model(model_id, adapter_dir, output_dir):
     from peft import PeftModel
 
@@ -77,18 +76,10 @@ def merge_and_save_model(model_id, adapter_dir, output_dir):
     base_model.config.save_pretrained(output_dir)
 
 
-
-
-
-
 def training_function(script_args, training_args):
     ################
     # Dataset
     ################
-
-    
-    if training_args.local_rank == 0:
-            print("## script_args.train_dataset_path: \n", script_args.train_dataset_path)
         
     train_dataset = load_dataset(
         "json",
@@ -118,11 +109,11 @@ def training_function(script_args, training_args):
     test_dataset = test_dataset.map(template_dataset, remove_columns=["messages"])
     
     # print random sample
-    # with training_args.main_process_first(
-    #     desc="Log a few random samples from the processed training set"
-    # ):
-    #     for index in random.sample(range(len(train_dataset)), 2):
-    #         print(train_dataset[index]["text"])
+    with training_args.main_process_first(
+        desc="Log a few random samples from the processed training set"
+    ):
+        for index in random.sample(range(len(train_dataset)), 1):
+            print(train_dataset[index]["text"])
 
     # Model    
     torch_dtype = torch.bfloat16
