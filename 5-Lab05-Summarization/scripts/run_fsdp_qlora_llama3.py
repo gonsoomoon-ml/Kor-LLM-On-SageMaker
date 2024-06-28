@@ -60,6 +60,27 @@ class ScriptArguments:
     )
 
 
+def merge_and_save_model(model_id, adapter_dir, output_dir):
+    from peft import PeftModel
+
+    print("Trying to load a Peft model. It might take a while without feedback")
+    base_model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        low_cpu_mem_usage=True,
+    )
+    peft_model = PeftModel.from_pretrained(base_model, adapter_dir)
+    model = peft_model.merge_and_unload()
+
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Saving the newly created merged model to {output_dir}")
+    model.save_pretrained(output_dir, safe_serialization=True)
+    base_model.config.save_pretrained(output_dir)
+
+
+
+
+
+
 def training_function(script_args, training_args):
     ################
     # Dataset
@@ -97,11 +118,11 @@ def training_function(script_args, training_args):
     test_dataset = test_dataset.map(template_dataset, remove_columns=["messages"])
     
     # print random sample
-    with training_args.main_process_first(
-        desc="Log a few random samples from the processed training set"
-    ):
-        for index in random.sample(range(len(train_dataset)), 2):
-            print(train_dataset[index]["text"])
+    # with training_args.main_process_first(
+    #     desc="Log a few random samples from the processed training set"
+    # ):
+    #     for index in random.sample(range(len(train_dataset)), 2):
+    #         print(train_dataset[index]["text"])
 
     # Model    
     torch_dtype = torch.bfloat16
@@ -118,7 +139,7 @@ def training_function(script_args, training_args):
     model = AutoModelForCausalLM.from_pretrained(
         script_args.model_id,
         quantization_config=quantization_config,
-        attn_implementation="sdpa", # use sdpa, alternatively use "flash_attention_2"
+        attn_implementation="flash_attention_2",
         torch_dtype=quant_storage_dtype,
         use_cache=False if training_args.gradient_checkpointing else True,  # this is needed for gradient checkpointing
     )
@@ -176,6 +197,18 @@ def training_function(script_args, training_args):
     if trainer.is_fsdp_enabled:
         trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
     trainer.save_model()
+
+    del model
+    del trainer
+    torch.cuda.empty_cache()  # Clears the cache
+
+    # load and merge
+    if training_args.distributed_state.is_main_process:
+        merge_and_save_model(
+            script_args.model_id, training_args.output_dir, "/opt/ml/model"
+        )
+        tokenizer.save_pretrained("/opt/ml/model")
+    training_args.distributed_state.wait_for_everyone()  # wait for all processes to print
     
 if __name__ == "__main__":
     parser = TrlParser((ScriptArguments, TrainingArguments))

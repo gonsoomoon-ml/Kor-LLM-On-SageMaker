@@ -64,6 +64,9 @@ def training_function(script_args, training_args):
     ################
 
     
+    if training_args.local_rank == 0:
+            print("## script_args.dataset_path: \n", script_args.dataset_path)
+        
     train_dataset = load_dataset(
         "json",
         data_files=os.path.join(script_args.dataset_path, "train_dataset.json"),
@@ -175,6 +178,10 @@ def training_function(script_args, training_args):
 if __name__ == "__main__":
     parser = TrlParser((ScriptArguments, TrainingArguments))
     script_args, training_args = parser.parse_args_and_config()    
+
+    if training_args.local_rank == 0:
+        print("## script_args: \n", script_args)
+        print("## training_args: \n", training_args)    
     
     # set use reentrant to False
     if training_args.gradient_checkpointing:
