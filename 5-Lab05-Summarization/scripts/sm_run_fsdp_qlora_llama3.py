@@ -45,14 +45,16 @@ LLAMA_3_CHAT_TEMPLATE = (
 
 @dataclass
 class ScriptArguments:
+
     train_dataset_path: str = field(
-        default=os.environ["SM_CHANNEL_TRAIN"],
-        metadata={"help": "Path to the dataset, e.g. /opt/ml/input/data/train/"},
+        default=None,
+        metadata={"help": "Path to the train dataset "},
     )
-    test_dataset_path: str = field(
-        default=os.environ["SM_CHANNEL_TEST"],
-        metadata={"help": "Path to the dataset, e.g. /opt/ml/input/data/test/"},
-    )
+    validation_dataset_path: str = field(
+        default=None,
+        metadata={"help": "Path to the validation dataset"},
+    )    
+
     model_id: str = field(
         default=None, metadata={"help": "Model ID to use for SFT training"}
     )
@@ -87,11 +89,11 @@ def training_function(script_args, training_args):
         data_files=os.path.join(script_args.train_dataset_path, "train_dataset.json"),
         split="train",
     )
-    test_dataset = load_dataset(
+    validation_dataset = load_dataset(
         "json",
-        data_files=os.path.join(script_args.test_dataset_path, "test_dataset.json"),
+        data_files=os.path.join(script_args.validation_dataset_path, "validation_dataset.json"),
         split="train",
-    )
+    )        
 
     ################
     # Model & Tokenizer
@@ -107,7 +109,8 @@ def training_function(script_args, training_args):
         return{"text":  tokenizer.apply_chat_template(examples["messages"], tokenize=False)}
     
     train_dataset = train_dataset.map(template_dataset, remove_columns=["messages"])
-    test_dataset = test_dataset.map(template_dataset, remove_columns=["messages"])
+    validation_dataset = validation_dataset.map(template_dataset, remove_columns=["messages"])    
+    # test_dataset = test_dataset.map(template_dataset, remove_columns=["messages"])
     
     # print random sample
     with training_args.main_process_first(
@@ -161,8 +164,8 @@ def training_function(script_args, training_args):
         model=model,
         args=training_args,
         train_dataset=train_dataset,
+        eval_dataset=validation_dataset,                
         dataset_text_field="text",
-        eval_dataset=test_dataset,
         peft_config=peft_config,
         max_seq_length=script_args.max_seq_length,
         tokenizer=tokenizer,

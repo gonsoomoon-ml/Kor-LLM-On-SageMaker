@@ -3,6 +3,7 @@ model_id:  "meta-llama/Meta-Llama-3-8B" # Hugging Face model id
 max_seq_len:  2048              # max sequence length for model and packing of the dataset
 # sagemaker specific parameters
 train_dataset_path: "/opt/ml/input/data/train/" # path to where SageMaker saves train dataset
+validation_dataset_path: "/opt/ml/input/data/validation/" # path to where SageMaker saves train dataset
 test_dataset_path: "/opt/ml/input/data/test/"   # path to where SageMaker saves test dataset
 # output_dir: "/opt/ml/model"            # path to where SageMaker will upload the model 
 output_dir: "/tmp/llama3"            # path to where SageMaker will upload the model 

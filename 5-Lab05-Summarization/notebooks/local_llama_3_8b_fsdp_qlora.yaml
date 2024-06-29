@@ -1,6 +1,13 @@
 # script parameters
 model_id:  "meta-llama/Meta-Llama-3-8B" # Hugging Face model id
-dataset_path: "../data/naver-news-summarization-ko"                      # path to dataset
+# small samples for Debug
+# train_dataset_path: "../data/naver-news-summarization-ko/train"                      # path to dataset
+# validation_dataset_path: "../data/naver-news-summarization-ko/validation"                      # path to dataset
+# test_dataset_path: "../data/naver-news-summarization-ko/test"                      # path to dataset
+# large samples for evaluation
+train_dataset_path: "../data/naver-news-summarization-ko/full_train"                      # path to dataset
+validation_dataset_path: "../data/naver-news-summarization-ko/full_validation"                      # path to dataset
+test_dataset_path: "../data/naver-news-summarization-ko/full_test"                      # path to dataset
 max_seq_len:  2048              # max sequence length for model and packing of the dataset
 # training parameters
 output_dir: "/home/ec2-user/SageMaker/models/llama-3-8b-naver-news" # Temporary output directory for model checkpoints
