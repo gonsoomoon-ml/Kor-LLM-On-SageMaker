@@ -11,10 +11,21 @@ output_dir: "/tmp/llama3"            # path to where SageMaker will upload the m
 report_to: "tensorboard"               # report metrics to tensorboard
 learning_rate: 0.0002                  # learning rate 2e-4
 lr_scheduler_type: "constant"          # learning rate scheduler
+###########################             
+# For Debug
+###########################             
+# num_train_epochs: 1                    # number of training epochs
+# per_device_train_batch_size: 1         # batch size per device during training
+# per_device_eval_batch_size: 1          # batch size for evaluation
+# gradient_accumulation_steps: 2         # number of steps before performing a backward/update pass
+###########################             
+# For evaluation
+###########################             
 num_train_epochs: 1                    # number of training epochs
-per_device_train_batch_size: 1         # batch size per device during training
-per_device_eval_batch_size: 1          # batch size for evaluation
+per_device_train_batch_size: 16         # batch size per device during training
+per_device_eval_batch_size: 8          # batch size for evaluation
 gradient_accumulation_steps: 2         # number of steps before performing a backward/update pass
+###########################             
 optim: adamw_torch                     # use torch adamw optimizer
 logging_steps: 10                      # log every 10 steps
 save_strategy: epoch                   # save checkpoint every epoch
